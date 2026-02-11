@@ -44,4 +44,10 @@ class TodoManager:
                 self.save_tasks()
                 return t
         return None      
-     
+    def delete_task(self,task_id):
+        for t in self.tasks:
+            if t.id ==task_id:
+                self.tasks.remove(t)
+                self.save_tasks() 
+                return True
+        return False

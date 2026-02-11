@@ -1,43 +1,59 @@
-import json
-import os
-from task import Task
-
-class TodoManager:
-    def __init__(self, filename="todos.json"):
-        self.filename = filename
-        self.tasks = []
-        self.load_tasks()
-
-    def load_tasks(self):
-        if os.path.exists(self.filename):
-            with open(self.filename, "r") as file:
-                data = json.load(file)
-                self.tasks = [Task.from_dict(item) for item in data]
-
-    def save_tasks(self):
-        with open(self.filename, "w") as file:
-            json.dump([task.to_dict() for task in self.tasks], file, indent=4)
-
-    def add_task(self, title):
-        task_id = len(self.tasks) + 1
-        self.tasks.append(Task(task_id, title))
-        self.save_tasks()
-
-    def view_tasks(self):
-        for task in self.tasks:
-            status = "✓" if task.completed else "✗"
-            print(f"{task.id}. {task.title} [{status}]")
-
-    def update_task(self, task_id, new_title=None, completed=None):
-        for task in self.tasks:
-            if task.id == task_id:
-                if new_title:
-                    task.title = new_title
-                if completed is not None:
-                    task.completed = completed
-                self.save_tasks()
-                return
-
-    def delete_task(self, task_id):
-        self.tasks = [task for task in self.tasks if task.id != task_id]
-        self.save_tasks()
+from todo_manager import TodoManager
+manager = TodoManager("todos.json")
+#menu
+while True:
+    print("\n--- TODO APP ---")
+    print("1. Add Todo")
+    print("2. View Todos")
+    print("3. Update Todo")
+    print("4. Delete Todo")
+    print("5. Exit")
+    choice =input('choose an option: ')
+    try:
+        choice = int(choice) 
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+        continue
+    if choice ==1:
+        print("Add todo selected")
+        title =input("enter todo title:")
+        new_task = manager.add_task(title)
+        print(f"Task added: {new_task.id}. {new_task.title}")
+    elif choice ==2:
+        print("View todos selected")
+        manager.view_tasks()
+    elif choice ==3:
+        print("Update todo selected") 
+        try:
+            task_id =int(input("Enter task ID to update: "))
+        except ValueError:
+            print("Invalid id. Please enter a number.")
+            continue
+        new_title = input("Enter new title (leave blank to keep current): ")
+        completed_input = input("Is the task completed? (yes/no, leave blank to keep current): ")
+        completed = None
+        if completed_input.lower() == "yes":
+            completed = True
+        elif completed_input.lower() == "no":
+            completed = False
+        updated_task = manager.update_task(task_id, new_title if new_title else None, completed)
+        if updated_task:
+            print("Task updated successfully.")
+        else:
+            print("Task not found.")
+    elif choice ==4:
+        print("delete todo selected")
+        try:
+            delete_id =int(input("Enter task ID to delete: "))
+        except ValueError:
+            print("Invalid id. Please enter a number.")
+            continue
+        if manager.delete_task(delete_id):
+            print("Task deleted successfully.")
+        else:
+            print("Task not found.")
+    elif choice ==5:
+        print("Exiting...")
+        break       
+    else:    
+        print("Invalid choice. Please try again.")         
